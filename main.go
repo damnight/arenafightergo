@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	ebiten.SetWindowTitle("Isometric (Ebitengine Demo)")
+	ebiten.SetWindowTitle("Arena Fighter Go")
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 

@@ -23,20 +23,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-// Game is an isometric demo game.
-type Game struct {
-	w, h         int
-	currentLevel *Level
-
-	camX, camY float64
-	camScale   float64
-	camScaleTo float64
-
-	mousePanX, mousePanY int
-
-	offscreen *ebiten.Image
-}
-
 // NewGame returns a new isometric demo Game.
 func NewGame() (*Game, error) {
 	l, err := NewLevel()

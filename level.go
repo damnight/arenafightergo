@@ -19,14 +19,6 @@ import (
 	"math/rand/v2"
 )
 
-// Level represents a Game level.
-type Level struct {
-	w, h int
-
-	tiles    [][]*Tile // (Y,X) array of tiles
-	tileSize int
-}
-
 // Tile returns the tile at the provided coordinates, or nil.
 func (l *Level) Tile(x, y int) *Tile {
 	if x >= 0 && y >= 0 && x < l.w && y < l.h {
@@ -44,8 +36,8 @@ func (l *Level) Size() (width, height int) {
 func NewLevel() (*Level, error) {
 	// Create a 108x108 Level.
 	l := &Level{
-		w:        108,
-		h:        108,
+		w:        128,
+		h:        128,
 		tileSize: 64,
 	}
 
