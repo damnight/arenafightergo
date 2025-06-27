@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package ecsgo
 
 import (
 	"bytes"
@@ -31,6 +31,7 @@ type SpriteSheet struct {
 	Tube   *ebiten.Image
 	Crown  *ebiten.Image
 	Portal *ebiten.Image
+	Knight *ebiten.Image
 }
 
 // LoadSpriteSheet loads the embedded SpriteSheet.
@@ -55,6 +56,7 @@ func LoadSpriteSheet(tileSize int) (*SpriteSheet, error) {
 	s.Tube = spriteAt(3, 4)
 	s.Crown = spriteAt(8, 6)
 	s.Portal = spriteAt(5, 6)
+	s.Knight = spriteAt(4, 7)
 
 	return s, nil
 }

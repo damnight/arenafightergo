@@ -1,0 +1,60 @@
+package ecsgo
+
+import (
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+type CreationFactory struct {
+	// EntityID -> []ComponentID
+	// ComponentID -> []ArchetypID
+	// ArchetypeID -> []EntityID
+	EntityIndex    map[EntityID][]ComponentID
+	ComponentIndex map[ComponentID][]ArchetypeID
+	ArchetypeIndex map[ArchetypeID][]EntityID
+
+	ArchetypeDefinitions map[ArchetypeID][]ComponentID
+
+	spriteSheet SpriteSheet
+}
+
+func NewCreationFactory() CreationFactory {
+	cf := CreationFactory()
+	ss, err := LoadSpriteSheet(64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load embedded spritesheet: %s", err)
+	}
+
+	cf.spriteSheet := ss
+	return cf
+
+}
+func (cf *CreationFactory) CreatePlayer1() {
+
+	//create player character archetype
+	archPlayerChar := CreateArchetypeID()
+
+	//create player character composition
+	compList := []IComponent{}
+
+	compList = append(compList, Position(0.0, 0.0, 0.0))
+	compList = append(compList, Velocity(0.0, 0.0))
+	compList = append(compList, Health(100))
+	compList = append(compList, BaseSpeed(30))
+	compList = append(compList, Sprite(c.spriteSheet.Knight))
+
+	//add archetype
+	cf.ArchetypeDefinitions[archPlayerChar] = compList
+
+	for _, comp := range compList {
+		cf.ComponentIndex[comp] = archPlayerChar
+	}
+
+	//create player character entity
+	e := CreateEnCreateEntity()
+
+	//add entity
+	cf.EntityIndex[e] = compList
+
+}

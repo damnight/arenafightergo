@@ -15,6 +15,7 @@
 package main
 
 import (
+	"arenafighter/ecsgo"
 	"fmt"
 	"math/rand/v2"
 )

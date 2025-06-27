@@ -1,29 +1,20 @@
-package main
+package ecsgo
 
 import "github.com/hajimehoshi/ebiten/v2"
 
-const (
-	Wall TileType = iota
-	Statue
-	Crown
-	Floor
-	Tube
-	Portal
-)
-
-type Tile struct {
+type Creature struct {
 	pos Position
+	vel Velocity
 
-	sprite   []*Sprite
-	tileType *TileType
+	health    Health
+	baseSpeed BaseSpeed
+
+	sprites []*Sprite
 }
 
-type Position struct {
-	x, y, z float64
-}
-
-type Sprite struct {
-	img *ebiten.Image
+type Orc struct {
+	creature Creature
+	color    Color
 }
 
 type Game struct {
