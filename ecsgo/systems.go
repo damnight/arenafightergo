@@ -53,17 +53,16 @@ func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
 
 	// Populate SpriteSheet.
 	s := &SpriteSheet{
-		terrain:  make(map[SpriteID][]*Sprite),
-		creature: make(map[SpriteID][]*Sprite),
+		slice: make(map[SpriteID][]*Sprite),
 	}
 
-	s.terrain[Floor] = append(s.terrain[Wall], &Sprite{img: spriteAt(10, 4)})
-	s.terrain[Wall] = append(s.terrain[Statue], &Sprite{img: spriteAt(2, 3)})
-	s.terrain[Statue] = append(s.terrain[Floor], &Sprite{img: spriteAt(5, 4)})
-	s.terrain[Tube] = append(s.terrain[Tube], &Sprite{img: spriteAt(3, 4)})
-	s.terrain[Crown] = append(s.terrain[Crown], &Sprite{img: spriteAt(8, 6)})
-	s.terrain[Portal] = append(s.terrain[Portal], &Sprite{img: spriteAt(5, 6)})
-	s.creature[Knight] = append(s.creature[Knight], &Sprite{img: spriteAt(4, 7)})
+	s.slice[Floor] = append(s.slice[Wall], &Sprite{img: spriteAt(10, 4)})
+	s.slice[Wall] = append(s.slice[Statue], &Sprite{img: spriteAt(2, 3)})
+	s.slice[Statue] = append(s.slice[Floor], &Sprite{img: spriteAt(5, 4)})
+	s.slice[Tube] = append(s.slice[Tube], &Sprite{img: spriteAt(3, 4)})
+	s.slice[Crown] = append(s.slice[Crown], &Sprite{img: spriteAt(8, 6)})
+	s.slice[Portal] = append(s.slice[Portal], &Sprite{img: spriteAt(5, 6)})
+	s.slice[Knight] = append(s.slice[Knight], &Sprite{img: spriteAt(4, 7)})
 
 	return s, nil
 }
@@ -107,18 +106,18 @@ func NewLevel() (*Level, error) {
 			val := rand.Intn(1000)
 			switch {
 			case isBorderSpace || val < 275:
-				t.AddSprites(sheet.terrain[Wall])
+				t.AddSprites(sheet.slice[Wall])
 			case val < 285:
-				t.AddSprites(sheet.terrain[Statue])
+				t.AddSprites(sheet.slice[Statue])
 			case val < 288:
-				t.AddSprites(sheet.terrain[Crown])
+				t.AddSprites(sheet.slice[Crown])
 			case val < 289:
-				t.AddSprites(sheet.terrain[Floor])
-				t.AddSprites(sheet.terrain[Tube])
+				t.AddSprites(sheet.slice[Floor])
+				t.AddSprites(sheet.slice[Tube])
 			case val < 290:
-				t.AddSprites(sheet.terrain[Portal])
+				t.AddSprites(sheet.slice[Portal])
 			default:
-				t.AddSprites(sheet.terrain[Floor])
+				t.AddSprites(sheet.slice[Floor])
 			}
 			l.Tiles[y][x] = t
 		}

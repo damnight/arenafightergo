@@ -3,26 +3,6 @@ package ecsgo
 type CreationFactory struct {
 }
 
-func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *Tile {
-
-	// create entity
-	e := CreateEntity()
-
-	tile := Tile{
-		// create object components
-		position: &Position{},
-		sprites:  GetTileSprites(tileType),
-	}
-
-	cp.AddEntity(e, tile)
-
-	// add obj as component
-
-	cp.AddComponent(tile)
-
-	return tile
-}
-
 func (cf *CreationFactory) CreatePlayer1() {
 
 	//	//create player character archetype
