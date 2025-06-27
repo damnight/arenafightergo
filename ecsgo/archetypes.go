@@ -12,9 +12,17 @@ type Creature struct {
 	sprites []*Sprite
 }
 
-type Orc struct {
-	creature Creature
-	color    Color
+type Renderable struct {
+}
+
+type SpriteSheet struct {
+	Floor  *ebiten.Image
+	Wall   *ebiten.Image
+	Statue *ebiten.Image
+	Tube   *ebiten.Image
+	Crown  *ebiten.Image
+	Portal *ebiten.Image
+	Knight *ebiten.Image
 }
 
 type Game struct {

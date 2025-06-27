@@ -16,20 +16,22 @@ type CreationFactory struct {
 
 	ArchetypeDefinitions map[ArchetypeID][]ComponentID
 
-	spriteSheet SpriteSheet
+	spriteSheet *SpriteSheet
 }
 
-func NewCreationFactory() CreationFactory {
-	cf := CreationFactory()
-	ss, err := LoadSpriteSheet(64)
+func NewCreationFactory() (CreationFactory, error) {
+	cf := CreationFactory{}
+	sheet, err := LoadSpriteSheet(64)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load embedded spritesheet: %s", err)
+		return CreationFactory{}, fmt.Errorf("failed to load embedded spritesheet: %s", err)
 	}
 
-	cf.spriteSheet := ss
-	return cf
+	cf.spriteSheet = sheet
+
+	return cf, nil
 
 }
+
 func (cf *CreationFactory) CreatePlayer1() {
 
 	//create player character archetype
@@ -38,10 +40,10 @@ func (cf *CreationFactory) CreatePlayer1() {
 	//create player character composition
 	compList := []IComponent{}
 
-	compList = append(compList, Position(0.0, 0.0, 0.0))
-	compList = append(compList, Velocity(0.0, 0.0))
-	compList = append(compList, Health(100))
-	compList = append(compList, BaseSpeed(30))
+	compList = append(compList, Position{0.0, 0.0, 0.0})
+	compList = append(compList, Velocity{0.0, 0.0})
+	compList = append(compList, Health{100})
+	compList = append(compList, BaseSpeed{30})
 	compList = append(compList, Sprite(c.spriteSheet.Knight))
 
 	//add archetype

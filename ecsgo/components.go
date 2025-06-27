@@ -1,32 +1,51 @@
 package ecsgo
 
 // this is a data class
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 type TileType uint
 
 const (
-	Wall TileType = iota
+	Default TileType = iota
 	Statue
 	Crown
 	Floor
 	Tube
 	Portal
+	Wall
 )
 
 type IComponent interface {
-	CreateComponent()
+}
+
+type IPooled interface {
+	Reset()
+	Get()
+	Put()
 }
 
 type Tile struct {
-	pos Position
-
-	sprite   []*Sprite
-	tileType *TileType
+	pos      Position
+	sprites  []*Sprite
+	tileType TileType
 }
 
-func (t *Tile) CreateComponent(pos Position, sprite []*Sprite, tileType *TileType) {
+func (t *Tile) Reset() {
+	t.pos = Position{}
+	t.sprites = []*Sprite{}
+	t.tileType = Default
+}
 
+func (t *Tile) AddSprite(s *Sprite) {
+	t.sprites = append(t.sprites, s)
+}
+
+func (t *Tile) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
+	for _, s := range t.sprites {
+		screen.DrawImage(s.img, options)
+	}
 }
 
 type Position struct {
