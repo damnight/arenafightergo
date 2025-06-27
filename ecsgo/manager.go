@@ -2,6 +2,7 @@ package ecsgo
 
 import (
 	"fmt"
+	"slices"
 )
 
 type World struct {
@@ -22,8 +23,8 @@ type ComponentManager struct {
 	spriteSheet *SpriteSheet
 }
 
-func (cp *ComponentManager) GetTileSprites(tileType SpriteID) *[]*Sprite{
-	
+func (cp *ComponentManager) GetTileSprites(tileType SpriteID) *[]*Sprite {
+
 	tileSprites := cp.spriteSheet.slice[tileType]
 	return &tileSprites
 }
@@ -41,7 +42,7 @@ func AddToWorld(comp IComponent, world World) {
 
 func NewComponentManager() (*ComponentManager, error) {
 	cp := &ComponentManager{}
-	
+
 	sheet, err := LoadSpriteSheet(64)
 	if err != nil {
 		sheet := &SpriteSheet{}
@@ -56,46 +57,48 @@ func NewComponentManager() (*ComponentManager, error) {
 
 }
 func (cp *ComponentManager) CheckForArchetype(comps []IComponent) ArchetypeID {
-	
-	
+
 	// get IDs from ComponentDefinitions
 	// get all associated Archetypes by ComponentIndex
 
-	archList := make(map[ComponentID][]ArchetypeID)
+	archList := []ArchetypeID{}
+	compList := []ComponentID{}
+
 	for _, c := range comps {
 		id := cp.ComponentDefinitions[&c]
 		archetypes := cp.ComponentIndex[id]
-		archList[id] = archetypes
-	}
-	
-	for , arch := range archList {
-
+		archList = archetypes
 	}
 
-	
-	// make subset of Archetypes where all components are in
-	
-
-
-	
-	// take smallest subset and return that archetype as ID as result
-
-
+	equality := false
+	for _, arch := range archList {
+		archtypeComponents := cp.ArchetypeDefinitions[arch]
+		equality = slices.Equal(archtypeComponents, compList)
+		if equality {
+			return arch
+		}
+	}
+	// only executes if no match was found, thus creating a new archetype
+	archID := CreateArchetypeID()
+	cp.ArchetypeDefinitions[archID] = compList
+	return archID
 }
-
 
 func (cp *ComponentManager) AddEntity(e EntityID, comps []IComponent) {
 	
-	// check if archetype exists for this set of Components
-	CheckForArchetype()
+	// coordinate entity and components
+	cp.EntityIndex[e] =
 
-	cp.ComponentIndex[cID] = append(cp.ComponentIndex[cID], arch)
-	cp.ArchetypeIndex[arch] = append(cp.ArchetypeIndex[arch], e)
-	cp.ArchetypeDefinitions[arch] = append(cp.ArchetypeDefinitions[arch], cID)
-	// add component to the world
-	AddToWorld(comp)
+
+	// check if archetype exists for this set of Components
+	arch := cp.CheckForArchetype(comps)
+
+
+
+	AddToWorld()
 
 }
+
 type ComponentSlice[T any] struct {
 	slice map[ArchetypeID][]T
 }

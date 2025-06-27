@@ -4,19 +4,17 @@ type CreationFactory struct {
 }
 
 func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *Tile {
-	
+
 	// create entity
 	e := CreateEntity()
 
 	tile := Tile{
-	// create object components
-	position : &Position{},
-	sprites : GetTileSprites(tileType)
+		// create object components
+		position: &Position{},
+		sprites:  GetTileSprites(tileType),
 	}
 
 	cp.AddEntity(e, tile)
-
-
 
 	// add obj as component
 
@@ -24,7 +22,6 @@ func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *Tile
 
 	return tile
 }
-
 
 func (cf *CreationFactory) CreatePlayer1() {
 
