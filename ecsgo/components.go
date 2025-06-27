@@ -28,28 +28,28 @@ type IPooled interface {
 }
 
 type Tile struct {
-	pos      Position
-	sprites  []*Sprite
+	pos      *Position
+	sprites  *[]*Sprite
 	tileType SpriteID
 }
 
-func (t *Tile) Reset() {
-	t.pos = Position{}
-	t.sprites = []*Sprite{}
-	t.tileType = Default
-}
-
-func (t *Tile) AddSprites(s []*Sprite) {
-	for _, sp := range s {
-		t.sprites = append(t.sprites, sp)
-	}
-}
-
-func (t *Tile) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
-	for _, s := range t.sprites {
-		screen.DrawImage(s.img, options)
-	}
-}
+//func (t *Tile) Reset() {
+//	t.pos = Position{}
+//	t.sprites = []*Sprite{}
+//	t.tileType = Default
+//}
+//
+//func (t *Tile) AddSprites(s []*Sprite) {
+//	for _, sp := range s {
+//		t.sprites = append(t.sprites, sp)
+//	}
+//}
+//
+//func (t *Tile) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
+//	for _, s := range t.sprites {
+//		screen.DrawImage(s.img, options)
+//	}
+//}
 
 type Sprite struct {
 	img *ebiten.Image
@@ -57,6 +57,12 @@ type Sprite struct {
 
 type Position struct {
 	x, y, z float64
+}
+
+func CreatePosition(x, y, z float64) (*Position, ComponentID) {
+	pos := &Position{x, y, z}
+	c := CreateComponentID()
+	return pos, c
 }
 
 type Velocity struct {

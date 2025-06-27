@@ -68,13 +68,13 @@ func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
 	return s, nil
 }
 
-// Tile returns the tile at the provided coordinates, or nil.
-func (l *Level) Tile(x, y int) *Tile {
-	if x >= 0 && y >= 0 && x < l.Width && y < l.Height {
-		return l.Tiles[y][x]
-	}
-	return nil
-}
+//// Tile returns the tile at the provided coordinates, or nil.
+//func (l *Level) Tile(x, y int) *Tile {
+//	if x >= 0 && y >= 0 && x < l.Width && y < l.Height {
+//		return l.Tiles[y][x]
+//	}
+//	return nil
+//}
 
 // Size returns the size of the Level.
 func (l *Level) Size() (width, height int) {
@@ -97,6 +97,7 @@ func NewLevel() (*Level, error) {
 	}
 
 	// Fill each tile with one or more sprites randomly.
+	// TODO: create tiles in function and add to ecs
 	l.Tiles = make([][]*Tile, l.Height)
 	for y := 0; y < l.Height; y++ {
 		l.Tiles[y] = make([]*Tile, l.Width)

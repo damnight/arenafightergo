@@ -1,33 +1,21 @@
 package ecsgo
 
-import (
-	"fmt"
-)
-
 type CreationFactory struct {
-	// EntityID -> []ComponentID
-	// ComponentID -> []ArchetypID
-	// ArchetypeID -> []EntityID
-	EntityIndex    map[EntityID][]ComponentID
-	ComponentIndex map[ComponentID][]ArchetypeID
-	ArchetypeIndex map[ArchetypeID][]EntityID
-
-	ArchetypeDefinitions map[ArchetypeID][]ComponentID
-
-	spriteSheet *SpriteSheet
 }
 
-func NewCreationFactory() (CreationFactory, error) {
-	cf := CreationFactory{}
-	sheet, err := LoadSpriteSheet(64)
-	if err != nil {
-		return CreationFactory{}, fmt.Errorf("failed to load embedded spritesheet: %s", err)
-	}
+func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *Tile {
+	// get obj from pool
+	tile := cp.tilePool.Get().(*Tile)
+	// init obj
+	tile.pos, _ = CreatePosition(x, y, z)
+	tile.sprites = &GetTileSprite(tileType)
+	tile.tileType = tileType
+	// add obj as component
+	e := CreateEntity()
 
-	cf.spriteSheet = sheet
+	cp.AddComponent(tile)
 
-	return cf, nil
-
+	return tile
 }
 
 func (cf *CreationFactory) CreatePlayer1() {
