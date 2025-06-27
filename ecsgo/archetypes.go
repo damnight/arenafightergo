@@ -16,31 +16,25 @@ type Renderable struct {
 }
 
 type SpriteSheet struct {
-	Floor  *ebiten.Image
-	Wall   *ebiten.Image
-	Statue *ebiten.Image
-	Tube   *ebiten.Image
-	Crown  *ebiten.Image
-	Portal *ebiten.Image
-	Knight *ebiten.Image
+	terrain  map[SpriteID][]*Sprite
+	creature map[SpriteID][]*Sprite
 }
 
 type Game struct {
-	w, h         int
-	currentLevel *Level
+	Width, Height int
+	CurrentLevel  *Level
 
-	camX, camY float64
-	camScale   float64
-	camScaleTo float64
+	CamX, CamY float64
+	CamScale   float64
+	CamScaleTo float64
 
-	mousePanX, mousePanY int
+	MousePanX, MousePanY int
 
-	offscreen *ebiten.Image
+	Offscreen *ebiten.Image
 }
 
 type Level struct {
-	width, height int
-
-	tiles    [][]*Tile // (Y,X) array of tiles
-	tileSize int
+	Width, Height int
+	Tiles         [][]*Tile
+	TileSize      int
 }

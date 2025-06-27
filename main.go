@@ -15,6 +15,7 @@
 package main
 
 import (
+	"arenafightergo/ecsgo"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -25,7 +26,7 @@ func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	g, err := NewGame()
+	g, err := ecsgo.NewGame()
 	if err != nil {
 		log.Fatal(err)
 	}

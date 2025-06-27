@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package ecsgo
 
 import (
 	"fmt"
-	"math"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"math"
 )
 
-// NewGame returns a new isometric demo Game.
 func NewGame() (*Game, error) {
 	l, err := NewLevel()
 	if err != nil {
@@ -31,11 +29,11 @@ func NewGame() (*Game, error) {
 	}
 
 	g := &Game{
-		currentLevel: l,
-		camScale:     1,
-		camScaleTo:   1,
-		mousePanX:    math.MinInt32,
-		mousePanY:    math.MinInt32,
+		CurrentLevel: l,
+		CamScale:     1,
+		CamScaleTo:   1,
+		MousePanX:    math.MinInt32,
+		MousePanY:    math.MinInt32,
 	}
 	return g, nil
 }
@@ -56,63 +54,63 @@ func (g *Game) Update() error {
 			scrollY = 1
 		}
 	}
-	g.camScaleTo += scrollY * (g.camScaleTo / 7)
+	g.CamScaleTo += scrollY * (g.CamScaleTo / 7)
 
 	// Clamp target zoom level.
-	if g.camScaleTo < 0.01 {
-		g.camScaleTo = 0.01
-	} else if g.camScaleTo > 100 {
-		g.camScaleTo = 100
+	if g.CamScaleTo < 0.01 {
+		g.CamScaleTo = 0.01
+	} else if g.CamScaleTo > 100 {
+		g.CamScaleTo = 100
 	}
 
 	// Smooth zoom transition.
 	div := 10.0
-	if g.camScaleTo > g.camScale {
-		g.camScale += (g.camScaleTo - g.camScale) / div
-	} else if g.camScaleTo < g.camScale {
-		g.camScale -= (g.camScale - g.camScaleTo) / div
+	if g.CamScaleTo > g.CamScale {
+		g.CamScale += (g.CamScaleTo - g.CamScale) / div
+	} else if g.CamScaleTo < g.CamScale {
+		g.CamScale -= (g.CamScale - g.CamScaleTo) / div
 	}
 
 	// Pan camera via keyboard.
-	pan := 7.0 / g.camScale
+	pan := 7.0 / g.CamScale
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) || ebiten.IsKeyPressed(ebiten.KeyA) {
-		g.camX -= pan
+		g.CamX -= pan
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyRight) || ebiten.IsKeyPressed(ebiten.KeyD) {
-		g.camX += pan
+		g.CamX += pan
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyDown) || ebiten.IsKeyPressed(ebiten.KeyS) {
-		g.camY -= pan
+		g.CamY -= pan
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyUp) || ebiten.IsKeyPressed(ebiten.KeyW) {
-		g.camY += pan
+		g.CamY += pan
 	}
 
 	// Pan camera via mouse.
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
-		if g.mousePanX == math.MinInt32 && g.mousePanY == math.MinInt32 {
-			g.mousePanX, g.mousePanY = ebiten.CursorPosition()
+		if g.MousePanX == math.MinInt32 && g.MousePanY == math.MinInt32 {
+			g.MousePanX, g.MousePanY = ebiten.CursorPosition()
 		} else {
 			x, y := ebiten.CursorPosition()
-			dx, dy := float64(g.mousePanX-x)*(pan/100), float64(g.mousePanY-y)*(pan/100)
-			g.camX, g.camY = g.camX-dx, g.camY+dy
+			dx, dy := float64(g.MousePanX-x)*(pan/100), float64(g.MousePanY-y)*(pan/100)
+			g.CamX, g.CamY = g.CamX-dx, g.CamY+dy
 		}
-	} else if g.mousePanX != math.MinInt32 || g.mousePanY != math.MinInt32 {
-		g.mousePanX, g.mousePanY = math.MinInt32, math.MinInt32
+	} else if g.MousePanX != math.MinInt32 || g.MousePanY != math.MinInt32 {
+		g.MousePanX, g.MousePanY = math.MinInt32, math.MinInt32
 	}
 
 	// Clamp camera position.
-	worldWidth := float64(g.currentLevel.w * g.currentLevel.tileSize / 2)
-	worldHeight := float64(g.currentLevel.h * g.currentLevel.tileSize / 2)
-	if g.camX < -worldWidth {
-		g.camX = -worldWidth
-	} else if g.camX > worldWidth {
-		g.camX = worldWidth
+	worldWidth := float64(g.CurrentLevel.Width * g.CurrentLevel.TileSize / 2)
+	worldHeight := float64(g.CurrentLevel.Height * g.CurrentLevel.TileSize / 2)
+	if g.CamX < -worldWidth {
+		g.CamX = -worldWidth
+	} else if g.CamX > worldWidth {
+		g.CamX = worldWidth
 	}
-	if g.camY < -worldHeight {
-		g.camY = -worldHeight
-	} else if g.camY > 0 {
-		g.camY = 0
+	if g.CamY < -worldHeight {
+		g.CamY = -worldHeight
+	} else if g.CamY > 0 {
+		g.CamY = 0
 	}
 
 	// Randomize level.
@@ -122,7 +120,7 @@ func (g *Game) Update() error {
 			return fmt.Errorf("failed to create new level: %s", err)
 		}
 
-		g.currentLevel = l
+		g.CurrentLevel = l
 	}
 
 	return nil
@@ -134,20 +132,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.renderLevel(screen)
 
 	// Print game info.
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("KEYS WASD EC R\nFPS  %0.0f\nTPS  %0.0f\nSCA  %0.2f\nPOS  %0.0f,%0.0f", ebiten.ActualFPS(), ebiten.ActualTPS(), g.camScale, g.camX, g.camY))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("KEYS WASD EC R\nFPS  %0.0f\nTPS  %0.0f\nSCA  %0.2f\nPOS  %0.0f,%0.0f", ebiten.ActualFPS(), ebiten.ActualTPS(), g.CamScale, g.CamX, g.CamY))
 }
 
 // Layout is called when the Game's layout changes.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	g.w, g.h = outsideWidth, outsideHeight
-	return g.w, g.h
+	g.Width, g.Height = outsideWidth, outsideHeight
+	return g.Width, g.Height
 }
 
 // cartesianToIso transforms cartesian coordinates into isometric coordinates.
 func (g *Game) cartesianToIso(x, y float64) (float64, float64) {
-	tileSize := g.currentLevel.tileSize
-	ix := (x - y) * float64(tileSize/2)
-	iy := (x + y) * float64(tileSize/4)
+	TileSize := g.CurrentLevel.TileSize
+	ix := (x - y) * float64(TileSize/2)
+	iy := (x + y) * float64(TileSize/4)
 	return ix, iy
 }
 
@@ -156,9 +154,9 @@ This function might be useful for those who want to modify this example.
 
 // isoToCartesian transforms isometric coordinates into cartesian coordinates.
 func (g *Game) isoToCartesian(x, y float64) (float64, float64) {
-	tileSize := g.currentLevel.tileSize
-	cx := (x/float64(tileSize/2) + y/float64(tileSize/4)) / 2
-	cy := (y/float64(tileSize/4) - (x / float64(tileSize/2))) / 2
+	TileSize := g.CurrentLevel.TileSize
+	cx := (x/float64(TileSize/2) + y/float64(TileSize/4)) / 2
+	cy := (y/float64(TileSize/4) - (x / float64(TileSize/2))) / 2
 	return cx, cy
 }
 */
@@ -166,42 +164,42 @@ func (g *Game) isoToCartesian(x, y float64) (float64, float64) {
 // renderLevel draws the current Level on the screen.
 func (g *Game) renderLevel(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	padding := float64(g.currentLevel.tileSize) * g.camScale
-	cx, cy := float64(g.w/2), float64(g.h/2)
+	padding := float64(g.CurrentLevel.TileSize) * g.CamScale
+	cx, cy := float64(g.Width/2), float64(g.Height/2)
 
-	scaleLater := g.camScale > 1
+	scaleLater := g.CamScale > 1
 	target := screen
-	scale := g.camScale
+	scale := g.CamScale
 
 	// When zooming in, tiles can have slight bleeding edges.
-	// To avoid them, render the result on an offscreen first and then scale it later.
+	// To avoid them, render the result on an Offscreen first and then scale it later.
 	if scaleLater {
-		if g.offscreen != nil {
-			if g.offscreen.Bounds().Size() != screen.Bounds().Size() {
-				g.offscreen.Deallocate()
-				g.offscreen = nil
+		if g.Offscreen != nil {
+			if g.Offscreen.Bounds().Size() != screen.Bounds().Size() {
+				g.Offscreen.Deallocate()
+				g.Offscreen = nil
 			}
 		}
-		if g.offscreen == nil {
+		if g.Offscreen == nil {
 			s := screen.Bounds().Size()
-			g.offscreen = ebiten.NewImage(s.X, s.Y)
+			g.Offscreen = ebiten.NewImage(s.X, s.Y)
 		}
-		target = g.offscreen
+		target = g.Offscreen
 		target.Clear()
 		scale = 1
 	}
 
-	for y := 0; y < g.currentLevel.h; y++ {
-		for x := 0; x < g.currentLevel.w; x++ {
+	for y := 0; y < g.CurrentLevel.Height; y++ {
+		for x := 0; x < g.CurrentLevel.Width; x++ {
 			xi, yi := g.cartesianToIso(float64(x), float64(y))
 
 			// Skip drawing tiles that are out of the screen.
-			drawX, drawY := ((xi-g.camX)*g.camScale)+cx, ((yi+g.camY)*g.camScale)+cy
-			if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.w) || drawY > float64(g.h) {
+			drawX, drawY := ((xi-g.CamX)*g.CamScale)+cx, ((yi+g.CamY)*g.CamScale)+cy
+			if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.Width) || drawY > float64(g.Height) {
 				continue
 			}
 
-			t := g.currentLevel.tiles[y][x]
+			t := g.CurrentLevel.Tiles[y][x]
 			if t == nil {
 				continue // No tile at this position.
 			}
@@ -210,7 +208,7 @@ func (g *Game) renderLevel(screen *ebiten.Image) {
 			// Move to current isometric position.
 			op.GeoM.Translate(xi, yi)
 			// Translate camera position.
-			op.GeoM.Translate(-g.camX, g.camY)
+			op.GeoM.Translate(-g.CamX, g.CamY)
 			// Zoom.
 			op.GeoM.Scale(scale, scale)
 			// Center.
@@ -223,7 +221,7 @@ func (g *Game) renderLevel(screen *ebiten.Image) {
 	if scaleLater {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-cx, -cy)
-		op.GeoM.Scale(float64(g.camScale), float64(g.camScale))
+		op.GeoM.Scale(float64(g.CamScale), float64(g.CamScale))
 		op.GeoM.Translate(cx, cy)
 		screen.DrawImage(target, op)
 	}

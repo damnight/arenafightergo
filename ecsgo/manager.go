@@ -7,7 +7,8 @@ type World struct {
 }
 
 type ComponentManager struct {
-	tilePool sync.Pool
+	tilePool   sync.Pool
+	spritePool sync.Pool
 }
 
 func NewComponentManager() *ComponentManager {
@@ -16,6 +17,11 @@ func NewComponentManager() *ComponentManager {
 			New: func() any {
 				// TODO: maybe put the sprite collocator func (don´t load each time) inside tile here?
 				return &Tile{}
+			},
+		},
+		spritePool: sync.Pool{
+			New: func() any {
+				return &Sprite{}
 			},
 		},
 	}

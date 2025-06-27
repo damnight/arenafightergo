@@ -5,16 +5,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type TileType uint
+type SpriteID uint
 
 const (
-	Default TileType = iota
+	Default SpriteID = iota
 	Statue
 	Crown
 	Floor
 	Tube
 	Portal
 	Wall
+	Knight
 )
 
 type IComponent interface {
@@ -29,7 +30,7 @@ type IPooled interface {
 type Tile struct {
 	pos      Position
 	sprites  []*Sprite
-	tileType TileType
+	tileType SpriteID
 }
 
 func (t *Tile) Reset() {
@@ -38,14 +39,20 @@ func (t *Tile) Reset() {
 	t.tileType = Default
 }
 
-func (t *Tile) AddSprite(s *Sprite) {
-	t.sprites = append(t.sprites, s)
+func (t *Tile) AddSprites(s []*Sprite) {
+	for _, sp := range s {
+		t.sprites = append(t.sprites, sp)
+	}
 }
 
 func (t *Tile) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
 	for _, s := range t.sprites {
 		screen.DrawImage(s.img, options)
 	}
+}
+
+type Sprite struct {
+	img *ebiten.Image
 }
 
 type Position struct {
@@ -66,8 +73,4 @@ type Health struct {
 
 type BaseSpeed struct {
 	speed int
-}
-
-type Sprite struct {
-	img *ebiten.Image
 }
