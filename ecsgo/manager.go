@@ -86,6 +86,7 @@ func (cp *ComponentManager) CheckForArchetype(comps []IComponent) ArchetypeID {
 	// only executes if no match was found, thus creating a new archetype
 	archID := CreateArchetypeID()
 	cp.ArchetypeDefinitions[archID] = compList
+
 	return archID
 }
 
@@ -106,6 +107,14 @@ func (cp *ComponentManager) AddEntity(comps []IComponent) *EntityID {
 
 	// check if archetype exists for this set of Components, add or create accordingly
 	arch := cp.CheckForArchetype(comps)
+
+	//map[ComponentID][]ArchetypeID
+	for _, c := range compList {
+		cp.ComponentIndex[c] = append(cp.ComponentIndex[c], arch)
+	}
+
+	//map[ArchetypeID][]EntityID
+	cp.ArchetypeIndex[arch] = append(cp.ArchetypeIndex[arch], e)
 
 	// add entity under archetype to data in a componentslice, with index
 	cp.world.addToWorld(arch, comps)
