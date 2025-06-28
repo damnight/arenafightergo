@@ -32,16 +32,16 @@ func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
 
 	// Populate SpriteSheet.
 	s := &SpriteSheet{
-		slice: make(map[SpriteID][]*Sprite),
+		slice: make(map[SpriteID][]*ebiten.Image),
 	}
 
-	s.slice[Floor] = append(s.slice[Wall], &Sprite{img: spriteAt(10, 4)})
-	s.slice[Wall] = append(s.slice[Statue], &Sprite{img: spriteAt(2, 3)})
-	s.slice[Statue] = append(s.slice[Floor], &Sprite{img: spriteAt(5, 4)})
-	s.slice[Tube] = append(s.slice[Tube], &Sprite{img: spriteAt(3, 4)})
-	s.slice[Crown] = append(s.slice[Crown], &Sprite{img: spriteAt(8, 6)})
-	s.slice[Portal] = append(s.slice[Portal], &Sprite{img: spriteAt(5, 6)})
-	s.slice[Knight] = append(s.slice[Knight], &Sprite{img: spriteAt(4, 7)})
+	s.slice[Floor] = append(s.slice[Floor], spriteAt(10, 4))
+	s.slice[Wall] = append(s.slice[Wall], spriteAt(2, 3))
+	s.slice[Statue] = append(s.slice[Statue], spriteAt(5, 4))
+	s.slice[Tube] = append(s.slice[Tube], spriteAt(3, 4))
+	s.slice[Crown] = append(s.slice[Crown], spriteAt(8, 6))
+	s.slice[Portal] = append(s.slice[Portal], spriteAt(5, 6))
+	s.slice[Knight] = append(s.slice[Knight], spriteAt(4, 7))
 
 	return s, nil
 }

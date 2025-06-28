@@ -17,7 +17,7 @@ type Renderable struct {
 }
 
 type SpriteSheet struct {
-	slice map[SpriteID][]*Sprite
+	slice map[SpriteID][]*ebiten.Image
 }
 
 type Tile struct {

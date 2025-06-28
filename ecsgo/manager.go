@@ -12,31 +12,25 @@ type ComponentManager struct {
 	// ComponentID -> []ArchetypID
 	// ArchetypeID -> []EntityID
 	EntityIndex          map[EntityID][]ComponentID
-	ComponentIndex       map[ComponentID][]ArchetypeID
+	ComponentIndex       map[ComponentType][]ArchetypeID
 	ArchetypeIndex       map[ArchetypeID][]EntityID
-	ArchetypeDefinitions map[ArchetypeID][]ComponentID
+	ArchetypeDefinitions map[ArchetypeID][]ComponentType
 	ComponentDefinitions map[*IComponent]ComponentID
 
-	world       *World
-	renderList  *ComponentSlice[ArchetypeID]
+	//world       *World
+	renderList  *[]IComponent
 	spriteSheet *SpriteSheet
-}
-
-func (cp *ComponentManager) GetTileSprites(tileType SpriteID) *[]*Sprite {
-
-	tileSprites := cp.spriteSheet.slice[tileType]
-	return &tileSprites
 }
 
 func NewComponentManager() (*ComponentManager, error) {
 	cp := &ComponentManager{
 		EntityIndex:          make(map[EntityID][]ComponentID),
-		ComponentIndex:       make(map[ComponentID][]ArchetypeID),
+		ComponentIndex:       make(map[ComponentType][]ArchetypeID),
 		ArchetypeIndex:       make(map[ArchetypeID][]EntityID),
-		ArchetypeDefinitions: make(map[ArchetypeID][]ComponentID),
+		ArchetypeDefinitions: make(map[ArchetypeID][]ComponentType),
 		ComponentDefinitions: make(map[*IComponent]ComponentID),
 
-		world:      CreateWorld(),
+		//world:      CreateWorld(),
 		renderList: CreateComponentSlice(),
 	}
 
@@ -81,10 +75,9 @@ func (cp *ComponentManager) renderLevel(screen *ebiten.Image, g *Game) {
 		scale = 1
 	}
 
-	for i, _ := range cp.renderList.data {
-
-		x := 1
-		y := i
+	for _, r := range cp.renderList.data {
+		x := r
+		y := 1
 		xi, yi := g.cartesianToIso(float64(x), float64(y))
 
 		// Skip drawing tiles that are out of the screen.
@@ -121,14 +114,14 @@ func (cp *ComponentManager) UpdateRenderList() {
 }
 
 func (cp *ComponentManager) getComponentSlice(arch ArchetypeID) *ComponentSlice[ArchetypeID] {
-	return cp.world.index[arch]
+	return cp.renderList[arch]
 
 }
 
 func (cp *ComponentManager) FindRenderArchetype() ArchetypeID {
 	comps := []IComponent{}
-	comps = append(comps, &Position{})
-	comps = append(comps, Default)
+	comps = append(comps, Position{})
+	comps = append(comps, Sprite{})
 
 	arch := cp.CheckForArchetype(comps)
 	return arch
@@ -138,27 +131,29 @@ func (cp *ComponentManager) CheckForArchetype(comps []IComponent) ArchetypeID {
 
 	// get IDs from ComponentDefinitions
 	// get all associated Archetypes by ComponentIndex
-
 	archList := []ArchetypeID{}
-	compList := []ComponentID{}
+	compSignature := []ComponentType{}
 
 	for _, c := range comps {
-		id := cp.ComponentDefinitions[&c]
-		archetypes := cp.ComponentIndex[id]
-		archList = archetypes
+		// ComponentIndex [ComponentType][]ArchetypeID
+		cType := c.Type()
+		archetypes := cp.ComponentIndex[cType]
+		archList = append(archList, archetypes...)
+		compSignature = append(compSignature, c.Type())
 	}
 
 	equality := false
 	for _, arch := range archList {
+
 		archtypeComponents := cp.ArchetypeDefinitions[arch]
-		equality = slices.Equal(archtypeComponents, compList)
+		equality = slices.Equal(archtypeComponents, compSignature)
 		if equality {
 			return arch
 		}
 	}
 	// only executes if no match was found, thus creating a new archetype
 	archID := CreateArchetypeID()
-	cp.ArchetypeDefinitions[archID] = compList
+	cp.ArchetypeDefinitions[archID] = compSignature
 
 	return archID
 }
@@ -182,25 +177,25 @@ func (cp *ComponentManager) AddEntity(comps []IComponent) *EntityID {
 	arch := cp.CheckForArchetype(comps)
 
 	//map[ComponentID][]ArchetypeID
-	for _, c := range compList {
-		cp.ComponentIndex[c] = append(cp.ComponentIndex[c], arch)
+	for _, c := range comps {
+		cp.ComponentIndex[c.Type()] = append(cp.ComponentIndex[c.Type()], arch)
 	}
 
 	//map[ArchetypeID][]EntityID
 	cp.ArchetypeIndex[arch] = append(cp.ArchetypeIndex[arch], e)
 
 	// add entity under archetype to data in a componentslice, with index
-	cp.world.addToWorld(arch, comps)
+	//cp.world.addToWorld(arch, comps)
 
 	return &e
 
 }
 
-func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *EntityID {
+func (cp *ComponentManager) CreateTile(x, y, z float64, spriteID SpriteID) *EntityID {
 
 	compList := []IComponent{}
 	compList = append(compList, Position{x: x, y: y, z: z})
-	compList = append(compList, tileType)
+	compList = append(compList, Sprite{spriteID: spriteID, img: cp.spriteSheet.slice[spriteID]})
 
 	tile := cp.AddEntity(compList)
 
@@ -222,18 +217,17 @@ func (w *World) addToWorld(arch ArchetypeID, comps []IComponent) {
 }
 
 type ComponentSlice[T any] struct {
-	data  map[int][]IComponent
-	index map[ArchetypeID]int
+	data map[ArchetypeID][]IComponent
 }
 
 func (cs *ComponentSlice[T]) addComponents(arch ArchetypeID, comps []IComponent) {
-	cs.data[cs.index[arch]] = append(cs.data[cs.index[arch]], comps)
+	cs.data[arch] = append(cs.data[arch], comps...)
+
 }
 
 func CreateComponentSlice() *ComponentSlice[ArchetypeID] {
 	return &ComponentSlice[ArchetypeID]{
-		data:  make(map[int][]IComponent),
-		index: make(map[ArchetypeID]int),
+		data: make(map[ArchetypeID][]IComponent),
 	}
 
 }

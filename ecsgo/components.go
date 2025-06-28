@@ -6,6 +6,7 @@ import (
 )
 
 type SpriteID uint
+type ComponentType uint
 
 const (
 	Default SpriteID = iota
@@ -18,7 +19,14 @@ const (
 	Knight
 )
 
+const (
+	VoidType ComponentType = iota
+	PositionType
+	SpriteType
+)
+
 type IComponent interface {
+	Type() ComponentType
 }
 
 type IPooled interface {
@@ -31,11 +39,20 @@ type IRenderable interface {
 }
 
 type Sprite struct {
-	img *ebiten.Image
+	img      []*ebiten.Image
+	spriteID SpriteID
+}
+
+func (s Sprite) Type() ComponentType {
+	return SpriteType
 }
 
 type Position struct {
 	x, y, z float64
+}
+
+func (p Position) Type() ComponentType {
+	return PositionType
 }
 
 func CreatePosition(x, y, z float64) (*Position, ComponentID) {
