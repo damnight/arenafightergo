@@ -46,10 +46,10 @@ func NewComponentManager() (*ComponentManager, error) {
 
 }
 func (cp *ComponentManager) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
-	for _, r := range cp.renderList.slice {
-		// TODO get sprite component from componentslice,
-		// or just first watch read how to do systems
-		screen.DrawImage(cp.spriteSheet.slice[r.spriteID], options)
+	for _, r := range cp.spriteSheet.slice {
+		for _, s := range r {
+			screen.DrawImage(s.img, options)
+		}
 	}
 }
 
@@ -113,7 +113,6 @@ func (cp *ComponentManager) CreateTile(x, y, z float64, tileType SpriteID) *Enti
 	compList = append(compList, tileType)
 
 	tile := cp.AddEntity(compList)
-	cp.addToRender()
 
 	return tile
 }
