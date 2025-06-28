@@ -18,7 +18,7 @@ type ComponentManager struct {
 	ComponentDefinitions map[*IComponent]ComponentID
 
 	world       *World
-	renderList  *Renderable
+	renderList  *ComponentSlice[ArchetypeID]
 	spriteSheet *SpriteSheet
 }
 
@@ -37,7 +37,7 @@ func NewComponentManager() (*ComponentManager, error) {
 		ComponentDefinitions: make(map[*IComponent]ComponentID),
 
 		world:      CreateWorld(),
-		renderList: &Renderable{},
+		renderList: CreateComponentSlice(),
 	}
 
 	sheet, err := LoadSpriteSheet(64)
@@ -53,12 +53,85 @@ func NewComponentManager() (*ComponentManager, error) {
 	return cp, nil
 
 }
-func (cp *ComponentManager) DrawTileSprites(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
-	for _, r := range cp.spriteSheet.slice {
-		for _, s := range r {
-			screen.DrawImage(s.img, options)
+func (cp *ComponentManager) renderLevel(screen *ebiten.Image, g *Game) {
+	cp.UpdateRenderList()
+	op := &ebiten.DrawImageOptions{}
+	padding := float64(g.CurrentLevel.TileSize) * g.CamScale
+	cx, cy := float64(g.Width/2), float64(g.Height/2)
+
+	scaleLater := g.CamScale > 1
+	target := screen
+	scale := g.CamScale
+
+	// When zooming in, tiles can have slight bleeding edges.
+	// To avoid them, render the result on an Offscreen first and then scale it later.
+	if scaleLater {
+		if g.Offscreen != nil {
+			if g.Offscreen.Bounds().Size() != screen.Bounds().Size() {
+				g.Offscreen.Deallocate()
+				g.Offscreen = nil
+			}
 		}
+		if g.Offscreen == nil {
+			s := screen.Bounds().Size()
+			g.Offscreen = ebiten.NewImage(s.X, s.Y)
+		}
+		target = g.Offscreen
+		target.Clear()
+		scale = 1
 	}
+
+	for i, _ := range cp.renderList.data {
+
+		x := 1
+		y := i
+		xi, yi := g.cartesianToIso(float64(x), float64(y))
+
+		// Skip drawing tiles that are out of the screen.
+		drawX, drawY := ((xi-g.CamX)*g.CamScale)+cx, ((yi+g.CamY)*g.CamScale)+cy
+		if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.Width) || drawY > float64(g.Height) {
+			continue
+		}
+
+		op.GeoM.Reset()
+		// Move to current isometric position.
+		op.GeoM.Translate(xi, yi)
+		// Translate camera position.
+		op.GeoM.Translate(-g.CamX, g.CamY)
+		// Zoom.
+		op.GeoM.Scale(scale, scale)
+		// Center.
+		op.GeoM.Translate(cx, cy)
+
+		screen.DrawImage(&ebiten.Image{}, op)
+	}
+	if scaleLater {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(-cx, -cy)
+		op.GeoM.Scale(float64(g.CamScale), float64(g.CamScale))
+		op.GeoM.Translate(cx, cy)
+		screen.DrawImage(target, op)
+	}
+}
+
+func (cp *ComponentManager) UpdateRenderList() {
+	arch := cp.FindRenderArchetype()
+	renderList := cp.getComponentSlice(arch)
+	cp.renderList = renderList
+}
+
+func (cp *ComponentManager) getComponentSlice(arch ArchetypeID) *ComponentSlice[ArchetypeID] {
+	return cp.world.index[arch]
+
+}
+
+func (cp *ComponentManager) FindRenderArchetype() ArchetypeID {
+	comps := []IComponent{}
+	comps = append(comps, &Position{})
+	comps = append(comps, Default)
+
+	arch := cp.CheckForArchetype(comps)
+	return arch
 }
 
 func (cp *ComponentManager) CheckForArchetype(comps []IComponent) ArchetypeID {

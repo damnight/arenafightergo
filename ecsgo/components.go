@@ -26,6 +26,10 @@ type IPooled interface {
 	Get()
 	Put()
 }
+
+type IRenderable interface {
+}
+
 type Sprite struct {
 	img *ebiten.Image
 }

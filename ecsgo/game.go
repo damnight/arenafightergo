@@ -130,7 +130,7 @@ func (g *Game) Update() error {
 // Draw draws the Game on the screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Render level.
-	g.renderLevel(screen)
+	g.cp.renderLevel(screen, g)
 
 	// Print game info.
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("KEYS WASD EC R\nFPS  %0.0f\nTPS  %0.0f\nSCA  %0.2f\nPOS  %0.0f,%0.0f", ebiten.ActualFPS(), ebiten.ActualTPS(), g.CamScale, g.CamX, g.CamY))
@@ -161,64 +161,3 @@ func (g *Game) isoToCartesian(x, y float64) (float64, float64) {
 	return cx, cy
 }
 */
-
-// renderLevel draws the current Level on the screen.
-func (g *Game) renderLevel(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	padding := float64(g.CurrentLevel.TileSize) * g.CamScale
-	cx, cy := float64(g.Width/2), float64(g.Height/2)
-
-	scaleLater := g.CamScale > 1
-	target := screen
-	scale := g.CamScale
-
-	// When zooming in, tiles can have slight bleeding edges.
-	// To avoid them, render the result on an Offscreen first and then scale it later.
-	if scaleLater {
-		if g.Offscreen != nil {
-			if g.Offscreen.Bounds().Size() != screen.Bounds().Size() {
-				g.Offscreen.Deallocate()
-				g.Offscreen = nil
-			}
-		}
-		if g.Offscreen == nil {
-			s := screen.Bounds().Size()
-			g.Offscreen = ebiten.NewImage(s.X, s.Y)
-		}
-		target = g.Offscreen
-		target.Clear()
-		scale = 1
-	}
-
-	for y := 0; y < g.CurrentLevel.Height; y++ {
-		for x := 0; x < g.CurrentLevel.Width; x++ {
-			xi, yi := g.cartesianToIso(float64(x), float64(y))
-
-			// Skip drawing tiles that are out of the screen.
-			drawX, drawY := ((xi-g.CamX)*g.CamScale)+cx, ((yi+g.CamY)*g.CamScale)+cy
-			if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.Width) || drawY > float64(g.Height) {
-				continue
-			}
-
-			op.GeoM.Reset()
-			// Move to current isometric position.
-			op.GeoM.Translate(xi, yi)
-			// Translate camera position.
-			op.GeoM.Translate(-g.CamX, g.CamY)
-			// Zoom.
-			op.GeoM.Scale(scale, scale)
-			// Center.
-			op.GeoM.Translate(cx, cy)
-
-			g.cp.DrawTileSprites(screen, op)
-		}
-	}
-
-	if scaleLater {
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(-cx, -cy)
-		op.GeoM.Scale(float64(g.CamScale), float64(g.CamScale))
-		op.GeoM.Translate(cx, cy)
-		screen.DrawImage(target, op)
-	}
-}

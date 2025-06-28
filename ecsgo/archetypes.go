@@ -13,7 +13,7 @@ type Creature struct {
 }
 
 type Renderable struct {
-	slice []*ComponentSlice[ArchetypeID]
+	slice *ComponentSlice[ArchetypeID]
 }
 
 type SpriteSheet struct {
