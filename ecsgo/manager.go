@@ -17,9 +17,8 @@ type ComponentManager struct {
 	ArchetypeDefinitions map[ArchetypeID][]ComponentID
 	ComponentDefinitions map[*IComponent]ComponentID
 
-	world      World
-	renderList Renderable
-
+	world       *World
+	renderList  *Renderable
 	spriteSheet *SpriteSheet
 }
 
@@ -30,7 +29,16 @@ func (cp *ComponentManager) GetTileSprites(tileType SpriteID) *[]*Sprite {
 }
 
 func NewComponentManager() (*ComponentManager, error) {
-	cp := &ComponentManager{}
+	cp := &ComponentManager{
+		EntityIndex:          make(map[EntityID][]ComponentID),
+		ComponentIndex:       make(map[ComponentID][]ArchetypeID),
+		ArchetypeIndex:       make(map[ArchetypeID][]EntityID),
+		ArchetypeDefinitions: make(map[ArchetypeID][]ComponentID),
+		ComponentDefinitions: make(map[*IComponent]ComponentID),
+
+		world:      CreateWorld(),
+		renderList: &Renderable{},
+	}
 
 	sheet, err := LoadSpriteSheet(64)
 	if err != nil {
@@ -45,7 +53,7 @@ func NewComponentManager() (*ComponentManager, error) {
 	return cp, nil
 
 }
-func (cp *ComponentManager) Draw(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
+func (cp *ComponentManager) DrawTileSprites(screen *ebiten.Image, options *ebiten.DrawImageOptions) {
 	for _, r := range cp.spriteSheet.slice {
 		for _, s := range r {
 			screen.DrawImage(s.img, options)

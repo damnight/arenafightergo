@@ -22,13 +22,14 @@ import (
 	"math"
 )
 
-func NewGame() (*Game, error) {
-	l, err := NewLevel()
+func (cp *ComponentManager) NewGame() (*Game, error) {
+	l, err := cp.NewLevel()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new level: %s", err)
 	}
 
 	g := &Game{
+		cp:           cp,
 		CurrentLevel: l,
 		CamScale:     1,
 		CamScaleTo:   1,
@@ -115,7 +116,7 @@ func (g *Game) Update() error {
 
 	// Randomize level.
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		l, err := NewLevel()
+		l, err := g.cp.NewLevel()
 		if err != nil {
 			return fmt.Errorf("failed to create new level: %s", err)
 		}
@@ -199,11 +200,6 @@ func (g *Game) renderLevel(screen *ebiten.Image) {
 				continue
 			}
 
-			t := g.CurrentLevel.Tiles[y][x]
-			if t == nil {
-				continue // No tile at this position.
-			}
-
 			op.GeoM.Reset()
 			// Move to current isometric position.
 			op.GeoM.Translate(xi, yi)
@@ -214,7 +210,7 @@ func (g *Game) renderLevel(screen *ebiten.Image) {
 			// Center.
 			op.GeoM.Translate(cx, cy)
 
-			t.Draw(target, op)
+			g.cp.DrawTileSprites(screen, op)
 		}
 	}
 

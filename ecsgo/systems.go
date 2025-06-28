@@ -6,8 +6,6 @@ import (
 	_ "image/png"
 	"math/rand"
 
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/images"
 )
@@ -17,25 +15,6 @@ type Systems struct {
 
 type EntityFactory struct {
 }
-
-//func (ef *EntityFactory)creatureCreator(cID CreatureID, args []T) []EntityID {
-//
-//	switch cID {
-//		case OrcID:
-//			return ef.createOrc(args)
-//		default:
-//			fmt.Print("default behaviour creatureCreator")
-//
-//	}
-//
-//}
-//
-//func (ef *EntityFactory)createOrc(args []T) []EntityID {
-//
-//
-//
-//
-//}
 
 // LoadSpriteSheet loads the embedded SpriteSheet.
 func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
@@ -67,21 +46,13 @@ func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
 	return s, nil
 }
 
-//// Tile returns the tile at the provided coordinates, or nil.
-//func (l *Level) Tile(x, y int) *Tile {
-//	if x >= 0 && y >= 0 && x < l.Width && y < l.Height {
-//		return l.Tiles[y][x]
-//	}
-//	return nil
-//}
-
 // Size returns the size of the Level.
 func (l *Level) Size() (width, height int) {
 	return l.Width, l.Height
 }
 
 // NewLevel returns a new randomly generated Level.
-func NewLevel() (*Level, error) {
+func (cp *ComponentManager) NewLevel() (*Level, error) {
 	// Create a 108x108 Level.
 	l := &Level{
 		Width:    128,
@@ -89,37 +60,27 @@ func NewLevel() (*Level, error) {
 		TileSize: 64,
 	}
 
-	// Load embedded SpriteSheet.
-	sheet, err := LoadSpriteSheet(l.TileSize)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load embedded spritesheet: %s", err)
-	}
+	z := 0.0
 
-	// Fill each tile with one or more sprites randomly.
-	// TODO: create tiles in function and add to ecs
-	l.Tiles = make([][]*Tile, l.Height)
 	for y := 0; y < l.Height; y++ {
-		l.Tiles[y] = make([]*Tile, l.Width)
 		for x := 0; x < l.Width; x++ {
-			t := &Tile{}
 			isBorderSpace := x == 0 || y == 0 || x == l.Width-1 || y == l.Height-1
 			val := rand.Intn(1000)
 			switch {
 			case isBorderSpace || val < 275:
-				t.AddSprites(sheet.slice[Wall])
+				cp.CreateTile(float64(x), float64(y), z, Wall)
 			case val < 285:
-				t.AddSprites(sheet.slice[Statue])
+				cp.CreateTile(float64(x), float64(y), z, Statue)
 			case val < 288:
-				t.AddSprites(sheet.slice[Crown])
+				cp.CreateTile(float64(x), float64(y), z, Crown)
 			case val < 289:
-				t.AddSprites(sheet.slice[Floor])
-				t.AddSprites(sheet.slice[Tube])
+				cp.CreateTile(float64(x), float64(y), z, Floor)
+				cp.CreateTile(float64(x), float64(y), z, Tube)
 			case val < 290:
-				t.AddSprites(sheet.slice[Portal])
+				cp.CreateTile(float64(x), float64(y), z, Portal)
 			default:
-				t.AddSprites(sheet.slice[Floor])
+				cp.CreateTile(float64(x), float64(y), z, Floor)
 			}
-			l.Tiles[y][x] = t
 		}
 	}
 

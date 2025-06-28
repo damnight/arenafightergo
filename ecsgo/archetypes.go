@@ -27,6 +27,7 @@ type Tile struct {
 }
 
 type Game struct {
+	cp            *ComponentManager
 	Width, Height int
 	CurrentLevel  *Level
 
@@ -41,6 +42,5 @@ type Game struct {
 
 type Level struct {
 	Width, Height int
-	Tiles         [][]*Tile
 	TileSize      int
 }

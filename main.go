@@ -26,7 +26,11 @@ func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	g, err := ecsgo.NewGame()
+	cp, err := ecsgo.NewComponentManager()
+	if err != nil {
+		log.Fatal(err)
+	}
+	g, err := cp.NewGame()
 	if err != nil {
 		log.Fatal(err)
 	}
