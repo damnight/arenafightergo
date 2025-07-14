@@ -20,12 +20,6 @@ type SpriteSheet struct {
 	slice map[SpriteID][]*ebiten.Image
 }
 
-type Tile struct {
-	id       *EntityID
-	position *Position
-	tileType SpriteID
-}
-
 type Game struct {
 	co            *Coordinator
 	Width, Height int

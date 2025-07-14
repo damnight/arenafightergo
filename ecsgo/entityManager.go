@@ -1,3 +1,0 @@
-package ecsgo
-
-import "fmt"

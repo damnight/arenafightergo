@@ -2,9 +2,8 @@ package ecsgo
 
 import (
 	"fmt"
-	"slices"
-
 	"github.com/hajimehoshi/ebiten/v2"
+	"slices"
 )
 
 type Coordinator struct {
@@ -15,7 +14,6 @@ type Coordinator struct {
 	am *ArchetypeManager
 	sm *SystemsManager
 
-	world       *World
 	renderList  []EntityID
 	spriteSheet *SpriteSheet
 }
@@ -38,7 +36,6 @@ func NewCoordinator() (*Coordinator, error) {
 		am:          am,
 		sm:          sm,
 		spriteSheet: sheet,
-		world:       CreateWorld(),
 	}
 
 	return co, nil
@@ -73,9 +70,10 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		scale = 1
 	}
 
-	for i, _ := range co.renderList {
-		x := 1
-		y := i
+	for _, e := range co.renderList {
+		comps := co.em.EntityIndex[e]
+		pos := co.cm.GetComponentByID(e, comps, PositionType).(Position)
+		x, y := pos.x, pos.y
 		xi, yi := g.cartesianToIso(float64(x), float64(y))
 
 		// Skip drawing tiles that are out of the screen.
@@ -107,11 +105,8 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 
 func (co *Coordinator) UpdateRenderList() {
 	arch := co.FindRenderArchetype()
-	renderList := co.getComponentSlice(arch)
+	renderList := co.am.ArchetypeIndex[arch]
 	co.renderList = renderList
-}
-func (co *Coordinator) getComponentSlice(arch ArchetypeID) *ComponentSlice[ArchetypeID] {
-	return co.world.index[arch]
 }
 
 func (co *Coordinator) FindRenderArchetype() ArchetypeID {
@@ -123,69 +118,65 @@ func (co *Coordinator) FindRenderArchetype() ArchetypeID {
 	return arch
 }
 
-func (co *Coordinator) AddEntity(comps []IComponent) (*EntityID, error) {
+func (co *Coordinator) AddEntity(comps []IComponent) (EntityID, error) {
 	// create entity
 	e, err := co.em.CreateEntity()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	// create componentIDs
-	compList := []ComponentID{}
-	for _, c := range comps {
-		id := co.cm.CreateComponentID()
-		// ComponentDefinitions[*IComponent]ComponentID
-		co.cm.ComponentDefinitions[c.Type()] = id
-		compList = append(compList, id)
-	}
+	// Register and add components to maps and slices respectively
+	compIDList := co.cm.RegisterComponents(e, comps)
 
 	// EntityIndex[EntityID][]ComponentID
-	co.em.EntityIndex[e] = compList
+	co.em.EntityIndex[e] = compIDList
 
 	// check if archetype exists for this set of Components, add or create accordingly
-	slices.Sort(compList)
-	arch := co.am.GetSetArchetype(comps)
+	slices.Sort(compIDList)
+	arch := co.am.GetSetArchetype(comps, co.cm)
 
 	//map[ComponentID][]ArchetypeID
 	for _, c := range comps {
-		cp.ComponentIndex[c.Type()] = append(cp.ComponentIndex[c.Type()], arch)
+		id := co.cm.ComponentDefinitions[&c]
+		co.cm.ComponentIndex[id] = append(co.cm.ComponentIndex[id], arch)
 	}
 
 	//map[ArchetypeID][]EntityID
-	co.ArchetypeIndex[arch] = append(co.ArchetypeIndex[arch], e)
+	co.am.ArchetypeIndex[arch] = append(co.am.ArchetypeIndex[arch], e)
 
-	// add entity under archetype to data in a componentslice, with index
-	//cp.world.addToWorld(arch, comps)
-	co.world.addToWorld(arch, comps)
-	return &e
+	return e, nil
 
 }
 
-func (co *Coordinator) CreateTile(x, y, z float64, tileType SpriteID) *EntityID {
+func (co *Coordinator) CreateTile(x, y, z float64, tileType SpriteID) EntityID {
 
 	compList := []IComponent{}
 	compList = append(compList, Position{x: x, y: y, z: z})
-	compList = append(compList, Sprite{spriteID: spriteID, img: cp.spriteSheet.slice[spriteID]})
+	compList = append(compList, Sprite{spriteID: tileType, img: co.spriteSheet.slice[tileType]})
 
-	tile := co.AddEntity(compList)
+	tile, err := co.AddEntity(compList)
+	if err != nil {
+		return 0
+	}
 
 	return tile
 }
 
-type World struct {
-	index map[ArchetypeID]*ComponentSlice[ArchetypeID]
-}
-
-func CreateWorld() *World {
-	return &World{index: make(map[ArchetypeID]*ComponentSlice[ArchetypeID])}
-}
-
-func (w *World) addToWorld(arch ArchetypeID, comps []IComponent) {
-	cs := CreateComponentSlice()
-	w.index[arch] = cs
-	cs.addComponents(arch, comps)
-}
-
+//
+//ype World struct {
+//       index map[ArchetypeID]*ComponentSlice[ArchetypeID]
+//
+//
+//unc CreateWorld() *World {
+//       return &World{index: make(map[ArchetypeID]*ComponentSlice[ArchetypeID])}
+//
+//
+//unc (w *World) addToWorld(arch ArchetypeID, comps []IComponent) {
+//       cs := CreateComponentSlice()
+//       w.index[arch] = cs
+//       cs.addComponents(arch, comps)
+//
+//
 //ype ComponentSlice[T any] struct {
 //       data  map[int][]IComponent
 //       index map[ArchetypeID]int

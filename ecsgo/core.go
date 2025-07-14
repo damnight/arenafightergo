@@ -151,6 +151,7 @@ type ComponentManager struct {
 	componentIDCounter uint64
 	// ComponentID -> []ArchetypID
 	ComponentIndex        map[ComponentID][]ArchetypeID
+	ComponentIDIndex      map[ComponentID]*IComponent
 	ComponentsByTypeIndex map[ComponentTypeID][]ComponentID
 	ComponentDefinitions  map[*IComponent]ComponentID
 	cf                    *ComponentField
@@ -161,9 +162,10 @@ func NewComponentManager() (*ComponentManager, error) {
 		ComponentIndex:        make(map[ComponentID][]ArchetypeID),
 		ComponentsByTypeIndex: make(map[ComponentTypeID][]ComponentID),
 		ComponentDefinitions:  make(map[*IComponent]ComponentID),
+		ComponentIDIndex:      make(map[ComponentID]*IComponent),
 	}
 
-	cm.cf = NewComponentField(cm)
+	NewComponentField(cm)
 	return cm, nil
 }
 
@@ -172,10 +174,23 @@ func (cm *ComponentManager) CreateComponentID() ComponentID {
 	return ComponentID(id)
 }
 
-func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) {
+func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) []ComponentID {
+	var compIDList []ComponentID
+
+	for _, c := range comps {
+		id := cm.CreateComponentID()
+		// Register component with ID
+		cm.ComponentIDIndex[id] = &c
+		cm.ComponentDefinitions[&c] = id
+		compIDList = append(compIDList, id)
+	}
+
 	for _, c := range comps {
 		cm.cf.AddComponent(e, c)
 	}
+
+	return compIDList
+
 }
 
 func (cm *ComponentManager) TypeFromComponentID(cID ComponentID) (ComponentTypeID, error) {
@@ -187,35 +202,51 @@ func (cm *ComponentManager) TypeFromComponentID(cID ComponentID) (ComponentTypeI
 	return VoidType, fmt.Errorf("ComponentID had no Type Entry")
 }
 
-type ComponentField struct {
-	positions *ComponentSlice[Position]
+func (cm *ComponentManager) GetComponentByID(e EntityID, comps []ComponentID, cType ComponentTypeID) IComponent {
+	for _, cID := range comps {
+		cTypeX, err := cm.TypeFromComponentID(cID)
+		if cTypeX == cType && err == nil {
+			c, err1 := cm.cf.GetComponent(e, cID, cTypeX)
+			if err1 != nil {
+				return nil
+			}
+			return c
+		}
+	}
+	return nil
 }
 
-func NewComponentField(cm *ComponentManager) *ComponentField {
-	cf := &ComponentField{}
-	for i := uint(1); i < uint(MAX_COMPONENTTYPE_ID)-1; i++ {
-		NewComponentSlice(ComponentTypeID(i), cm)
-	}
+type ComponentField struct {
+	positions *ComponentSlice[Position]
+	sprites   *ComponentSlice[Sprite]
+}
 
-	return cf
+func NewComponentField(cm *ComponentManager) {
+	cm.cf = &ComponentField{}
 
+	NewComponentSlice(PositionType, cm)
+	NewComponentSlice(SpriteType, cm)
 }
 
 func (cf *ComponentField) AddComponent(e EntityID, c IComponent) {
 	switch c.Type() {
-	case VoidType:
-		return
 	case PositionType:
 		cf.positions.addComponent(e, c.(Position))
+	case SpriteType:
+		cf.sprites.addComponent(e, c.(Sprite))
+	default:
+		return
 	}
 }
 
 func (cf *ComponentField) RemoveComponent(e EntityID, c IComponent) {
 	switch c.Type() {
-	case VoidType:
-		return
 	case PositionType:
 		cf.positions.removeComponent(e)
+	case SpriteType:
+		cf.sprites.removeComponent(e)
+	default:
+		return
 	}
 }
 
@@ -226,6 +257,10 @@ func (cf *ComponentField) GetComponent(e EntityID, cID ComponentID, cType Compon
 	switch cType {
 	case PositionType:
 		c, err = cf.positions.getComponent(e)
+	case SpriteType:
+		c, err = cf.sprites.getComponent(e)
+	default:
+		return c, fmt.Errorf("Default type error, no components found")
 	}
 
 	if err != nil {
@@ -241,15 +276,16 @@ type ComponentSlice[T any] struct {
 
 func NewComponentSlice(cType ComponentTypeID, cm *ComponentManager) error {
 	switch cType {
-	case VoidType:
-		return fmt.Errorf("Can´t Create NilType ComponentSlice")
 	case PositionType:
 		cm.cf.positions = &ComponentSlice[Position]{data: []Position{}, entityMap: make(map[EntityID]uint)}
 		return nil
+	case SpriteType:
+		cm.cf.sprites = &ComponentSlice[Sprite]{data: []Sprite{}, entityMap: make(map[EntityID]uint)}
+		return nil
+	default:
+		return fmt.Errorf("Can´t Create NilType ComponentSlice")
+
 	}
-
-	return nil
-
 }
 
 func (cs *ComponentSlice[T]) addComponent(e EntityID, component T) {
