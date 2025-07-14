@@ -29,7 +29,7 @@ func NewEntityManager() (*EntityManager, error) {
 }
 
 func (em *EntityManager) CreateEntity() (EntityID, error) {
-	if !(em.entityIDCounter < MAX_ENTITIES) {
+	if em.entityIDCounter < MAX_ENTITIES {
 		id := atomic.AddUint64(&em.entityIDCounter, 1)
 		return EntityID(id), nil
 	} else {

@@ -2,6 +2,7 @@ package ecsgo
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	_ "image/png"
 	"math/rand"
@@ -73,6 +74,7 @@ func (co *Coordinator) NewLevel() (*Level, error) {
 
 	for y := 0; y < l.Height; y++ {
 		for x := 0; x < l.Width; x++ {
+			fmt.Printf("create tile\n")
 			isBorderSpace := x == 0 || y == 0 || x == l.Width-1 || y == l.Height-1
 			val := rand.Intn(1000)
 			switch {

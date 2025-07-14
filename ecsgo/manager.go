@@ -2,8 +2,9 @@ package ecsgo
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/ebiten/v2"
 	"slices"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Coordinator struct {
@@ -69,30 +70,34 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		target.Clear()
 		scale = 1
 	}
-
 	for _, e := range co.renderList {
-		comps := co.em.EntityIndex[e]
-		pos := co.cm.GetComponentByID(e, comps, PositionType).(Position)
-		x, y := pos.x, pos.y
-		xi, yi := g.cartesianToIso(float64(x), float64(y))
+		fmt.Print(e)
+		compIDs := co.em.EntityIndex[e]
+		pos := co.cm.GetComponentByID(e, compIDs, PositionType)
 
-		// Skip drawing tiles that are out of the screen.
-		drawX, drawY := ((xi-g.CamX)*g.CamScale)+cx, ((yi+g.CamY)*g.CamScale)+cy
-		if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.Width) || drawY > float64(g.Height) {
-			continue
+		if position, ok := pos.(*Position); ok {
+			x, y := position.x, position.y
+
+			xi, yi := g.cartesianToIso(float64(x), float64(y))
+
+			// Skip drawing tiles that are out of the screen.
+			drawX, drawY := ((xi-g.CamX)*g.CamScale)+cx, ((yi+g.CamY)*g.CamScale)+cy
+			if drawX+padding < 0 || drawY+padding < 0 || drawX > float64(g.Width) || drawY > float64(g.Height) {
+				continue
+			}
+
+			op.GeoM.Reset()
+			// Move to current isometric position.
+			op.GeoM.Translate(xi, yi)
+			// Translate camera position.
+			op.GeoM.Translate(-g.CamX, g.CamY)
+			// Zoom.
+			op.GeoM.Scale(scale, scale)
+			// Center.
+			op.GeoM.Translate(cx, cy)
+
+			screen.DrawImage(&ebiten.Image{}, op)
 		}
-
-		op.GeoM.Reset()
-		// Move to current isometric position.
-		op.GeoM.Translate(xi, yi)
-		// Translate camera position.
-		op.GeoM.Translate(-g.CamX, g.CamY)
-		// Zoom.
-		op.GeoM.Scale(scale, scale)
-		// Center.
-		op.GeoM.Translate(cx, cy)
-
-		screen.DrawImage(&ebiten.Image{}, op)
 	}
 	if scaleLater {
 		op := &ebiten.DrawImageOptions{}
@@ -110,12 +115,20 @@ func (co *Coordinator) UpdateRenderList() {
 }
 
 func (co *Coordinator) FindRenderArchetype() ArchetypeID {
-	comps := []IComponent{}
-	comps = append(comps, Position{})
-	comps = append(comps, Sprite{})
+	sig := []ComponentTypeID{}
+	sig = append(sig, PositionType)
+	sig = append(sig, SpriteType)
+	slices.Sort(sig)
 
-	arch := co.am.GetSetArchetype(comps, co.cm)
-	return arch
+	var renderArch ArchetypeID
+	for archID, signature := range co.am.ArchetypeDefinitions {
+		if slices.Equal(signature, sig) {
+			renderArch = archID
+			break
+		}
+	}
+
+	return renderArch
 }
 
 func (co *Coordinator) AddEntity(comps []IComponent) (EntityID, error) {

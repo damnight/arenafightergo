@@ -25,6 +25,7 @@ import (
 func (co *Coordinator) NewGame() (*Game, error) {
 	l, err := co.NewLevel()
 	if err != nil {
+		fmt.Println("NEW GAME ERROR")
 		return nil, fmt.Errorf("failed to create new level: %s", err)
 	}
 
