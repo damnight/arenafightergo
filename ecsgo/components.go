@@ -6,7 +6,7 @@ import (
 )
 
 type SpriteID uint16
-type ComponentType uint16
+type ComponentTypeID uint16
 
 const (
 	Default SpriteID = iota
@@ -20,13 +20,14 @@ const (
 )
 
 const (
-	VoidType ComponentType = iota
+	VoidType ComponentTypeID = iota
 	PositionType
 	SpriteType
+	MAX_COMPONENTTYPE_ID
 )
 
 type IComponent interface {
-	Type() ComponentType
+	Type() ComponentTypeID
 }
 
 type IPooled interface {
@@ -43,7 +44,7 @@ type Sprite struct {
 	spriteID SpriteID
 }
 
-func (s Sprite) Type() ComponentType {
+func (s Sprite) Type() ComponentTypeID {
 	return SpriteType
 }
 
@@ -51,7 +52,7 @@ type Position struct {
 	x, y, z float64
 }
 
-func (p Position) Type() ComponentType {
+func (p Position) Type() ComponentTypeID {
 	return PositionType
 }
 

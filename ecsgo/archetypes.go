@@ -27,7 +27,7 @@ type Tile struct {
 }
 
 type Game struct {
-	cp            *ComponentManager
+	co            *Coordinator
 	Width, Height int
 	CurrentLevel  *Level
 

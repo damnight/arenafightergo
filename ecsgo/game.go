@@ -22,14 +22,14 @@ import (
 	"math"
 )
 
-func (cp *ComponentManager) NewGame() (*Game, error) {
-	l, err := cp.NewLevel()
+func (co *Coordinator) NewGame() (*Game, error) {
+	l, err := co.NewLevel()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new level: %s", err)
 	}
 
 	g := &Game{
-		cp:           cp,
+		co:           co,
 		CurrentLevel: l,
 		CamScale:     1,
 		CamScaleTo:   1,
@@ -116,7 +116,7 @@ func (g *Game) Update() error {
 
 	// Randomize level.
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		l, err := g.cp.NewLevel()
+		l, err := g.co.NewLevel()
 		if err != nil {
 			return fmt.Errorf("failed to create new level: %s", err)
 		}
@@ -130,7 +130,7 @@ func (g *Game) Update() error {
 // Draw draws the Game on the screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Render level.
-	g.cp.renderLevel(screen, g)
+	g.co.renderLevel(screen, g)
 
 	// Print game info.
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("KEYS WASD EC R\nFPS  %0.0f\nTPS  %0.0f\nSCA  %0.2f\nPOS  %0.0f,%0.0f", ebiten.ActualFPS(), ebiten.ActualTPS(), g.CamScale, g.CamX, g.CamY))

@@ -15,15 +15,9 @@ type Coordinator struct {
 	am *ArchetypeManager
 	sm *SystemsManager
 
-	//world       *World
-	renderList  *[]IComponent
+	world       *World
+	renderList  []EntityID
 	spriteSheet *SpriteSheet
-}
-
-func (co *Coordinator) GetTileSprites(tileType SpriteID) *[]*Sprite {
-
-	tileSprites := co.spriteSheet.slice[tileType]
-	return &tileSprites
 }
 
 func NewCoordinator() (*Coordinator, error) {
@@ -45,7 +39,6 @@ func NewCoordinator() (*Coordinator, error) {
 		sm:          sm,
 		spriteSheet: sheet,
 		world:       CreateWorld(),
-		renderList:  CreateComponentSlice(),
 	}
 
 	return co, nil
@@ -80,8 +73,7 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		scale = 1
 	}
 
-	for i, _ := range co.renderList.data {
-
+	for i, _ := range co.renderList {
 		x := 1
 		y := i
 		xi, yi := g.cartesianToIso(float64(x), float64(y))
@@ -192,22 +184,6 @@ func (w *World) addToWorld(arch ArchetypeID, comps []IComponent) {
 	cs := CreateComponentSlice()
 	w.index[arch] = cs
 	cs.addComponents(arch, comps)
-}
-
-type ComponentSlice[T any] struct {
-	data map[ArchetypeID][]IComponent
-}
-
-func (cs *ComponentSlice[T]) addComponents(arch ArchetypeID, comps []IComponent) {
-	cs.data[arch] = append(cs.data[arch], comps...)
-
-}
-
-func CreateComponentSlice() *ComponentSlice[ArchetypeID] {
-	return &ComponentSlice[ArchetypeID]{
-		data: make(map[ArchetypeID][]IComponent),
-	}
-
 }
 
 //ype ComponentSlice[T any] struct {

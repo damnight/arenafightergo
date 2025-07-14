@@ -61,7 +61,7 @@ func (l *Level) Size() (width, height int) {
 }
 
 // NewLevel returns a new randomly generated Level.
-func (cp *ComponentManager) NewLevel() (*Level, error) {
+func (co *Coordinator) NewLevel() (*Level, error) {
 	// Create a 108x108 Level.
 	l := &Level{
 		Width:    128,
@@ -77,18 +77,18 @@ func (cp *ComponentManager) NewLevel() (*Level, error) {
 			val := rand.Intn(1000)
 			switch {
 			case isBorderSpace || val < 275:
-				cp.CreateTile(float64(x), float64(y), z, Wall)
+				co.CreateTile(float64(x), float64(y), z, Wall)
 			case val < 285:
-				cp.CreateTile(float64(x), float64(y), z, Statue)
+				co.CreateTile(float64(x), float64(y), z, Statue)
 			case val < 288:
-				cp.CreateTile(float64(x), float64(y), z, Crown)
+				co.CreateTile(float64(x), float64(y), z, Crown)
 			case val < 289:
-				cp.CreateTile(float64(x), float64(y), z, Floor)
-				cp.CreateTile(float64(x), float64(y), z, Tube)
+				co.CreateTile(float64(x), float64(y), z, Floor)
+				co.CreateTile(float64(x), float64(y), z, Tube)
 			case val < 290:
-				cp.CreateTile(float64(x), float64(y), z, Portal)
+				co.CreateTile(float64(x), float64(y), z, Portal)
 			default:
-				cp.CreateTile(float64(x), float64(y), z, Floor)
+				co.CreateTile(float64(x), float64(y), z, Floor)
 			}
 		}
 	}
