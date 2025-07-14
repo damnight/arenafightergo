@@ -5,8 +5,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type SpriteID uint
-type ComponentType uint
+type SpriteID uint16
+type ComponentType uint16
 
 const (
 	Default SpriteID = iota
@@ -53,12 +53,6 @@ type Position struct {
 
 func (p Position) Type() ComponentType {
 	return PositionType
-}
-
-func CreatePosition(x, y, z float64) (*Position, ComponentID) {
-	pos := &Position{x, y, z}
-	c := CreateComponentID()
-	return pos, c
 }
 
 type Velocity struct {

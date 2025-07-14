@@ -10,17 +10,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/images"
 )
 
-type Systems struct {
+type SystemID uint32
+
+const (
+	SpriteLoader SystemID = iota
+)
+
+type SystemsManager struct {
+	SystemsIndex []SystemID
 }
 
-type EntityFactory struct {
+func NewSystemsManager() (*SystemsManager, error) {
+	sm := &SystemsManager{}
+	return sm, nil
 }
 
 // LoadSpriteSheet loads the embedded SpriteSheet.
 func LoadSpriteSheet(TileSize int) (*SpriteSheet, error) {
 	img, _, err := image.Decode(bytes.NewReader(images.Spritesheet_png))
 	if err != nil {
-		return nil, err
+		return &SpriteSheet{}, err
 	}
 
 	sheet := ebiten.NewImageFromImage(img)
