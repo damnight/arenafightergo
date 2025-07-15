@@ -182,6 +182,7 @@ func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) [
 		// Register component with ID
 		cm.ComponentIDIndex[id] = &c
 		cm.ComponentDefinitions[&c] = id
+		cm.ComponentsByTypeIndex[c.Type()] = append(cm.ComponentsByTypeIndex[c.Type()], id)
 		compIDList = append(compIDList, id)
 	}
 

@@ -71,11 +71,11 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		scale = 1
 	}
 	for _, e := range co.renderList {
-		fmt.Print(e)
 		compIDs := co.em.EntityIndex[e]
 		pos := co.cm.GetComponentByID(e, compIDs, PositionType)
+		sp := co.cm.GetComponentByID(e, compIDs, SpriteType)
 
-		if position, ok := pos.(*Position); ok {
+		if position, ok := pos.(Position); ok {
 			x, y := position.x, position.y
 
 			xi, yi := g.cartesianToIso(float64(x), float64(y))
@@ -95,8 +95,9 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 			op.GeoM.Scale(scale, scale)
 			// Center.
 			op.GeoM.Translate(cx, cy)
-
-			screen.DrawImage(&ebiten.Image{}, op)
+			if sprite, ok2 := sp.(Sprite); ok2 {
+				target.DrawImage(sprite.img[0], op)
+			}
 		}
 	}
 	if scaleLater {
