@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"sync/atomic"
+	"time"
 )
 
 type EntityID uint64
@@ -41,10 +42,7 @@ func (em *EntityManager) DestroyEntity(e EntityID, cm *ComponentManager) error {
 	if e < MAX_ENTITIES {
 		compIDs := em.EntityIndex[e]
 		for _, cID := range compIDs {
-			cType, err := cm.TypeFromComponentID(cID)
-			if err != nil {
-				return err
-			}
+			cType := cm.ComponentIDType[cID]
 
 			c, err := cm.cf.GetComponent(e, cID, cType)
 			if err != nil {
@@ -154,6 +152,7 @@ type ComponentManager struct {
 	ComponentIDIndex      map[ComponentID]*IComponent
 	ComponentsByTypeIndex map[ComponentTypeID][]ComponentID
 	ComponentDefinitions  map[*IComponent]ComponentID
+	ComponentIDType       map[ComponentID]ComponentTypeID
 	cf                    *ComponentField
 }
 
@@ -163,6 +162,7 @@ func NewComponentManager() (*ComponentManager, error) {
 		ComponentsByTypeIndex: make(map[ComponentTypeID][]ComponentID),
 		ComponentDefinitions:  make(map[*IComponent]ComponentID),
 		ComponentIDIndex:      make(map[ComponentID]*IComponent),
+		ComponentIDType:       make(map[ComponentID]ComponentTypeID),
 	}
 
 	NewComponentField(cm)
@@ -180,9 +180,11 @@ func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) [
 	for _, c := range comps {
 		id := cm.CreateComponentID()
 		// Register component with ID
+		cType := c.Type()
 		cm.ComponentIDIndex[id] = &c
 		cm.ComponentDefinitions[&c] = id
-		cm.ComponentsByTypeIndex[c.Type()] = append(cm.ComponentsByTypeIndex[c.Type()], id)
+		cm.ComponentsByTypeIndex[cType] = append(cm.ComponentsByTypeIndex[cType], id)
+		cm.ComponentIDType[id] = cType
 		compIDList = append(compIDList, id)
 	}
 
@@ -194,19 +196,13 @@ func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) [
 
 }
 
-func (cm *ComponentManager) TypeFromComponentID(cID ComponentID) (ComponentTypeID, error) {
-	for cType, compIDs := range cm.ComponentsByTypeIndex {
-		if slices.Contains(compIDs, cID) {
-			return cType, nil
-		}
-	}
-	return VoidType, fmt.Errorf("ComponentID had no Type Entry")
-}
-
 func (cm *ComponentManager) GetComponentByID(e EntityID, comps []ComponentID, cType ComponentTypeID) IComponent {
 	for _, cID := range comps {
-		cTypeX, err := cm.TypeFromComponentID(cID)
-		if cTypeX == cType && err == nil {
+		start := time.Now()
+		cTypeX := cm.ComponentIDType[cID]
+		finish := time.Since(start)
+		fmt.Printf("|>>| TypeFromComponentID: %v |\n", finish)
+		if cTypeX == cType {
 			c, err1 := cm.cf.GetComponent(e, cID, cTypeX)
 			if err1 != nil {
 				return nil

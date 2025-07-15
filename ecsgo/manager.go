@@ -44,6 +44,8 @@ func NewCoordinator() (*Coordinator, error) {
 
 }
 
+var drawcalls = 0
+
 func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 	start := time.Now()
 	co.UpdateRenderList()
@@ -77,10 +79,17 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 
 	start = time.Now()
 	for _, e := range co.renderList {
+		var drawstart time.Time
+		var drawfinish time.Duration
+
+		inner := time.Now()
+
 		compIDs := co.em.EntityIndex[e]
 		pos := co.cm.GetComponentByID(e, compIDs, PositionType)
 		sp := co.cm.GetComponentByID(e, compIDs, SpriteType)
+		retrieveComps := time.Since(inner)
 
+		inner = time.Now()
 		if position, ok := pos.(Position); ok {
 			x, y := position.x, position.y
 
@@ -102,9 +111,15 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 			// Center.
 			op.GeoM.Translate(cx, cy)
 			if sprite, ok2 := sp.(Sprite); ok2 {
+				drawstart = time.Now()
 				target.DrawImage(sprite.img[0], op)
+				drawcalls++
+				drawfinish = time.Since(drawstart)
 			}
 		}
+		afterif := time.Since(inner)
+
+		fmt.Printf("|> | Retrieve Components: %v | Draw Sprite: %v | If-Clause: %v |\n", retrieveComps, drawfinish, afterif)
 	}
 	renderloop := time.Since(start)
 
@@ -118,7 +133,8 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 	}
 	scaleLaterdraw := time.Since(start)
 
-	fmt.Printf("| Update Randerlist: %v | Render Loop: %v | Scale Later draw: %v |\n", update_render, renderloop, scaleLaterdraw)
+	fmt.Printf("| Update Randerlist: %v | Render Loop: %v | Scale Later draw: %v | Draw Calls per sec: %v |\n", update_render.String(), renderloop, scaleLaterdraw, drawcalls)
+	drawcalls = 0
 
 }
 
