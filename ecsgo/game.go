@@ -16,10 +16,12 @@ package ecsgo
 
 import (
 	"fmt"
+	"math"
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"math"
 )
 
 func (co *Coordinator) NewGame() (*Game, error) {
@@ -131,8 +133,12 @@ func (g *Game) Update() error {
 // Draw draws the Game on the screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	// Render level.
-	g.co.renderLevel(screen, g)
 
+	start := time.Now()
+	g.co.renderLevel(screen, g)
+	finish := time.Since(start)
+	fmt.Printf("| Render Level: %v | Drawcalls: %v |\n", finish, drawcalls)
+	drawcalls = 0
 	// Print game info.
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("KEYS WASD EC R\nFPS  %0.0f\nTPS  %0.0f\nSCA  %0.2f\nPOS  %0.0f,%0.0f", ebiten.ActualFPS(), ebiten.ActualTPS(), g.CamScale, g.CamX, g.CamY))
 }

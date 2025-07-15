@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 	"sync/atomic"
-	"time"
 )
 
 type EntityID uint64
@@ -17,16 +16,25 @@ const MAX_ENTITIES = 100000
 type EntityManager struct {
 	// EntityID -> []ComponentID
 	EntityIndex     map[EntityID][]ComponentID
+	ComponentIndex  map[ComponentID]EntityID
 	entityIDCounter uint64
 }
 
 func NewEntityManager() (*EntityManager, error) {
 	// Initialize the queue with all possible entity IDs
 	em := &EntityManager{
-		EntityIndex: make(map[EntityID][]ComponentID),
+		EntityIndex:    make(map[EntityID][]ComponentID),
+		ComponentIndex: make(map[ComponentID]EntityID),
 	}
 
 	return em, nil
+}
+
+func (em *EntityManager) RegisterComponents(e EntityID, compIDList []ComponentID) {
+	em.EntityIndex[e] = compIDList
+	for _, c := range compIDList {
+		em.ComponentIndex[c] = e
+	}
 }
 
 func (em *EntityManager) CreateEntity() (EntityID, error) {
@@ -49,6 +57,8 @@ func (em *EntityManager) DestroyEntity(e EntityID, cm *ComponentManager) error {
 				return err
 			}
 			cm.cf.RemoveComponent(e, c)
+			// TODO: Deregister Compoenent and Entities
+			delete(em.ComponentIndex, cID)
 		}
 		// TODO: deregister from archetypes
 
@@ -67,13 +77,8 @@ func (em *EntityManager) DestroyEntity(e EntityID, cm *ComponentManager) error {
 	// --mLivingEntityCount;
 	return nil
 }
-func (em *EntityManager) GetEntity(cID ComponentID) (EntityID, error) {
-	for e, compID := range em.EntityIndex {
-		if slices.Contains(compID, cID) {
-			return e, nil
-		}
-	}
-	return 0, fmt.Errorf("No Entity found for Component: %v", cID)
+func (em *EntityManager) GetEntity(cID ComponentID) EntityID {
+	return em.ComponentIndex[cID]
 }
 
 // Archetype Manager
@@ -100,6 +105,7 @@ func (am *ArchetypeManager) CreateArchetypeID() ArchetypeID {
 }
 
 func (am *ArchetypeManager) GetSetArchetype(comps []IComponent, cm *ComponentManager) ArchetypeID {
+	//start := time.Now()
 	// get all assiciated ComponentIDs by ArchetypeDefinition
 	// get all associated Archetypes by ComponentIndex
 	archList := []ArchetypeID{}
@@ -136,6 +142,8 @@ func (am *ArchetypeManager) GetSetArchetype(comps []IComponent, cm *ComponentMan
 	archID := am.CreateArchetypeID()
 	am.ArchetypeDefinitions[archID] = compTypeList
 
+	//finish := time.Since(start)
+	//fmt.Printf("|>>| GetSetArchetype: %v", finish)
 	return archID
 }
 
@@ -198,10 +206,10 @@ func (cm *ComponentManager) RegisterComponents(e EntityID, comps []IComponent) [
 
 func (cm *ComponentManager) GetComponentByID(e EntityID, comps []ComponentID, cType ComponentTypeID) IComponent {
 	for _, cID := range comps {
-		start := time.Now()
+		//start := time.Now()
 		cTypeX := cm.ComponentIDType[cID]
-		finish := time.Since(start)
-		fmt.Printf("|>>| TypeFromComponentID: %v |\n", finish)
+		//finish := time.Since(start)
+		//fmt.Printf("|>>| TypeFromComponentID: %v |\n", finish)
 		if cTypeX == cType {
 			c, err1 := cm.cf.GetComponent(e, cID, cTypeX)
 			if err1 != nil {

@@ -1,0 +1,7 @@
+important
+
+1. Currently still static, removing components and such shouldn´t work yet, atleast it would become inconsistent
+> recycle IDs (Entity, Arch, Comp)
+> deregister from all dictionaries correctly
+> move entities to correct archetypes if their components change
+> make change of components on entities possible

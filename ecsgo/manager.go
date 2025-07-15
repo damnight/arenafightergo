@@ -3,7 +3,6 @@ package ecsgo
 import (
 	"fmt"
 	"slices"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -47,9 +46,9 @@ func NewCoordinator() (*Coordinator, error) {
 var drawcalls = 0
 
 func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
-	start := time.Now()
+	//start := time.Now()
 	co.UpdateRenderList()
-	update_render := time.Since(start)
+	//update_render := time.Since(start)
 
 	op := &ebiten.DrawImageOptions{}
 	padding := float64(g.CurrentLevel.TileSize) * g.CamScale
@@ -77,19 +76,19 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		scale = 1
 	}
 
-	start = time.Now()
+	//start = time.Now()
 	for _, e := range co.renderList {
-		var drawstart time.Time
-		var drawfinish time.Duration
+		//var drawstart time.Time
+		//var drawfinish time.Duration
 
-		inner := time.Now()
+		//inner := time.Now()
 
 		compIDs := co.em.EntityIndex[e]
 		pos := co.cm.GetComponentByID(e, compIDs, PositionType)
 		sp := co.cm.GetComponentByID(e, compIDs, SpriteType)
-		retrieveComps := time.Since(inner)
+		//retrieveComps := time.Since(inner)
 
-		inner = time.Now()
+		//inner = time.Now()
 		if position, ok := pos.(Position); ok {
 			x, y := position.x, position.y
 
@@ -111,19 +110,19 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 			// Center.
 			op.GeoM.Translate(cx, cy)
 			if sprite, ok2 := sp.(Sprite); ok2 {
-				drawstart = time.Now()
+				//drawstart = time.Now()
 				target.DrawImage(sprite.img[0], op)
 				drawcalls++
-				drawfinish = time.Since(drawstart)
+				//drawfinish = time.Since(drawstart)
 			}
 		}
-		afterif := time.Since(inner)
+		//afterif := time.Since(inner)
 
-		fmt.Printf("|> | Retrieve Components: %v | Draw Sprite: %v | If-Clause: %v |\n", retrieveComps, drawfinish, afterif)
+		//fmt.Printf("|> | Retrieve Components: %v | Draw Sprite: %v | If-Clause: %v |\n", retrieveComps, drawfinish, afterif)
 	}
-	renderloop := time.Since(start)
+	//renderloop := time.Since(start)
 
-	start = time.Now()
+	//start = time.Now()
 	if scaleLater {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-cx, -cy)
@@ -131,10 +130,9 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		op.GeoM.Translate(cx, cy)
 		screen.DrawImage(target, op)
 	}
-	scaleLaterdraw := time.Since(start)
+	//scaleLaterdraw := time.Since(start)
 
-	fmt.Printf("| Update Randerlist: %v | Render Loop: %v | Scale Later draw: %v | Draw Calls per sec: %v |\n", update_render.String(), renderloop, scaleLaterdraw, drawcalls)
-	drawcalls = 0
+	//fmt.Printf("| Update Randerlist: %v | Render Loop: %v | Scale Later draw: %v | Draw Calls per sec: %v |\n", update_render.String(), renderloop, scaleLaterdraw, drawcalls)
 
 }
 
@@ -172,7 +170,7 @@ func (co *Coordinator) AddEntity(comps []IComponent) (EntityID, error) {
 	compIDList := co.cm.RegisterComponents(e, comps)
 
 	// EntityIndex[EntityID][]ComponentID
-	co.em.EntityIndex[e] = compIDList
+	co.em.RegisterComponents(e, compIDList)
 
 	// check if archetype exists for this set of Components, add or create accordingly
 	slices.Sort(compIDList)
