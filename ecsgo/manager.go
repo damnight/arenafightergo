@@ -3,6 +3,7 @@ package ecsgo
 import (
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -44,7 +45,10 @@ func NewCoordinator() (*Coordinator, error) {
 }
 
 func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
+	start := time.Now()
 	co.UpdateRenderList()
+	update_render := time.Since(start)
+
 	op := &ebiten.DrawImageOptions{}
 	padding := float64(g.CurrentLevel.TileSize) * g.CamScale
 	cx, cy := float64(g.Width/2), float64(g.Height/2)
@@ -70,6 +74,8 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		target.Clear()
 		scale = 1
 	}
+
+	start = time.Now()
 	for _, e := range co.renderList {
 		compIDs := co.em.EntityIndex[e]
 		pos := co.cm.GetComponentByID(e, compIDs, PositionType)
@@ -100,6 +106,9 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 			}
 		}
 	}
+	renderloop := time.Since(start)
+
+	start = time.Now()
 	if scaleLater {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(-cx, -cy)
@@ -107,6 +116,10 @@ func (co *Coordinator) renderLevel(screen *ebiten.Image, g *Game) {
 		op.GeoM.Translate(cx, cy)
 		screen.DrawImage(target, op)
 	}
+	scaleLaterdraw := time.Since(start)
+
+	fmt.Printf("| Update Randerlist: %v | Render Loop: %v | Scale Later draw: %v |\n", update_render, renderloop, scaleLaterdraw)
+
 }
 
 func (co *Coordinator) UpdateRenderList() {
