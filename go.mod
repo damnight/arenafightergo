@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.8.8
+	github.com/joelschutz/stagehand v1.1.1
 	golang.org/x/image v0.20.0
 )
 

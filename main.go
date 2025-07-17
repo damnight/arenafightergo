@@ -15,27 +15,31 @@
 package main
 
 import (
-	"arenafightergo/ecsgo"
+	"arenafightergo/ui"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+const WINDOW_W = 640
+const WINDOW_H = 480
 
 func main() {
 	ebiten.SetWindowTitle("Arena Fighter Go")
 	ebiten.SetWindowSize(WINDOW_W, WINDOW_H)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	co, err := ecsgo.NewCoordinator()
-	if err != nil {
-		log.Fatal(err)
-	}
-	g, err := co.NewGame()
-	if err != nil {
-		log.Fatal(err)
-	}
+	//co, err := ecsgo.NewCoordinator()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//g, err := co.NewGame()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
-	if err = ebiten.RunGame(g); err != nil {
+	sm, err := ui.MakeSceneManager()
+	if err = ebiten.RunGame(sm); err != nil {
 		log.Fatal(err)
 	}
 }
