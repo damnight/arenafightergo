@@ -6,3 +6,5 @@ const LEVEL_H = 32
 
 const LEVEL1_MAP_PATH = "bin/maps/level1.csv"
 
+const WINDOW_W = 640
+const WINDOW_H = 480

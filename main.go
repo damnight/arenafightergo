@@ -23,7 +23,7 @@ import (
 
 func main() {
 	ebiten.SetWindowTitle("Arena Fighter Go")
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(WINDOW_W, WINDOW_H)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
 	co, err := ecsgo.NewCoordinator()

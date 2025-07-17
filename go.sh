@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nvim *.go ecsgo/*.go
+nvim *.go ecsgo/*.go ui/*.go
