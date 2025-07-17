@@ -25,7 +25,7 @@ import (
 )
 
 func (co *Coordinator) NewGame() (*Game, error) {
-	l, err := co.NewLevel()
+	l, err := co.NewLevel1()
 	if err != nil {
 		fmt.Println("NEW GAME ERROR")
 		return nil, fmt.Errorf("failed to create new level: %s", err)
@@ -119,7 +119,7 @@ func (g *Game) Update() error {
 
 	// Randomize level.
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-		l, err := g.co.NewLevel()
+		l, err := g.co.NewLevel1()
 		if err != nil {
 			return fmt.Errorf("failed to create new level: %s", err)
 		}

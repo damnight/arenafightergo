@@ -37,4 +37,6 @@ type Game struct {
 type Level struct {
 	Width, Height int
 	TileSize      int
+
+	Map [LEVEL_W][LEVEL_H]SpriteID
 }

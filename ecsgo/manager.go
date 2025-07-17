@@ -20,7 +20,7 @@ type Coordinator struct {
 }
 
 func NewCoordinator() (*Coordinator, error) {
-	sheet, err0 := LoadSpriteSheet(64)
+	sheet, err0 := LoadSpriteSheet(TILE_SIZE)
 	em, err1 := NewEntityManager()
 	cm, err2 := NewComponentManager()
 	am, err3 := NewArchetypeManager()

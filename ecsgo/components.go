@@ -10,13 +10,23 @@ type ComponentTypeID uint16
 
 const (
 	Default SpriteID = iota
-	Statue
-	Crown
-	Floor
-	Tube
-	Portal
-	Wall
-	Knight
+	//Statue
+	//Crown
+	//Floor
+	//Tube
+	//Portal
+	//Wall
+	//Knight
+	LightRock
+	CrackedEarth1
+	CrackedEarth2
+	CrackedEarthWeeds1
+	CrackedEarthWeeds2
+	LightGrass
+	DarkGrass
+	WaterLight1
+	RockWall1
+	RockPeak1
 )
 
 const (
